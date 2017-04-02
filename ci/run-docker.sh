@@ -159,8 +159,8 @@ else
   mkdir -p target/$TARGET/openssl
   out=`pwd`/target/$TARGET/openssl/openssl-$OPENSSL_VERS.tar.gz
   curl -o $out https://www.openssl.org/source/openssl-$OPENSSL_VERS.tar.gz
-  echo "$OPENSSL_SHA256 $out" > $out.checksum
-  sha256sum -c $out.checksum
+  sha256sum $out > $out.sha256
+  test $OPENSSL_SHA256 = `cut -d ' ' -f 1 $out.sha256`
 
   tar xf $out -C target/$TARGET/openssl
   (cd target/$TARGET/openssl/openssl-$OPENSSL_VERS && \
