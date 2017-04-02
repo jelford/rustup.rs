@@ -145,20 +145,40 @@ case $TARGET in
     ;;
 esac
 
-mkdir -p target/$TARGET/openssl
-install=`pwd`/target/$TARGET/openssl/openssl-install
-out=`pwd`/target/$TARGET/openssl/openssl-$OPENSSL_VERS.tar.gz
-curl -o $out https://www.openssl.org/source/openssl-$OPENSSL_VERS.tar.gz
-sha256sum $out > $out.sha256
-test $OPENSSL_SHA256 = `cut -d ' ' -f 1 $out.sha256`
+# let's see what we got from the cache
+find target/$TARGET -maxdepth 4
 
-tar xf $out -C target/$TARGET/openssl
-(cd target/$TARGET/openssl/openssl-$OPENSSL_VERS && \
- CC=$OPENSSL_CC \
- AR=$OPENSSL_AR \
- $SETARCH ./Configure --prefix=$install no-dso $OPENSSL_OS $OPENSSL_CFLAGS -fPIC && \
- make -j4 && \
- make install)
+install=`pwd`/target/$TARGET/openssl/openssl-install/$OPENSSL_VERS
+
+if (sh -c "$install/bin/openssl version | grep $OPENSSL_VERS > /dev/null" 2> /dev/null); then
+  echo 'Using cached OpenSSL static libs'
+else
+  # If the build fails half way through it will be difficult to distinguish when the next run sees
+  # the cached version, so finalize the build atomically. We're linking statically so don't need to
+  # worry about using a different prefix at install time.
+  final_install_path=$install
+  install=$install-partial
+
+  mkdir -p target/$TARGET/openssl
+  out=`pwd`/target/$TARGET/openssl/openssl-$OPENSSL_VERS.tar.gz
+  curl -o $out https://www.openssl.org/source/openssl-$OPENSSL_VERS.tar.gz
+  sha256sum $out > $out.sha256
+  test $OPENSSL_SHA256 = `cut -d ' ' -f 1 $out.sha256`
+
+  tar xf $out -C target/$TARGET/openssl
+  (cd target/$TARGET/openssl/openssl-$OPENSSL_VERS && \
+   CC=$OPENSSL_CC \
+   AR=$OPENSSL_AR \
+   $SETARCH ./Configure --prefix=$install no-dso $OPENSSL_OS $OPENSSL_CFLAGS -fPIC && \
+   make -j4 && \
+   make install)
+
+   mv $install $final_install_path
+   install=$final_install_path
+
+   # Check everything went okay
+   ls $install
+fi
 
 # Variables to the openssl-sys crate to link statically against the OpenSSL we
 # just compiled above
