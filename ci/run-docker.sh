@@ -147,12 +147,11 @@ esac
 
 install=`pwd`/target/$TARGET/openssl/openssl-install
 
-if [ ! -e "$install" ]; then
+if [ ! -e "$install/lib/libcrypto.a" ]; then
   mkdir -p target/$TARGET/openssl
   out=`pwd`/target/$TARGET/openssl/openssl-$OPENSSL_VERS.tar.gz
   curl -o $out https://www.openssl.org/source/openssl-$OPENSSL_VERS.tar.gz
-  sha256sum $out > $out.sha256
-  test $OPENSSL_SHA256 = `cut -d ' ' -f 1 $out.sha256`
+  echo $OPENSSL_SHA256 $out | sha256sum -c
 
   tar xf $out -C target/$TARGET/openssl
   (cd target/$TARGET/openssl/openssl-$OPENSSL_VERS && \
