@@ -102,9 +102,10 @@ matrix:
     #        MACOSX_DEPLOYMENT_TARGET=10.7
 
 cache:
-  - cargo
   - directories:
     - target/$TARGET/openssl/openssl-install
+    - target/cargo-home
+    - target/$TARGET/release
 
 branches:
   only:
