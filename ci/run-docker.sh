@@ -147,7 +147,7 @@ esac
 
 install=`pwd`/target/$TARGET/openssl/openssl-install
 
-if [ ! -e "$install"]; then
+if [ ! -e "$install" ]; then
   mkdir -p target/$TARGET/openssl
   out=`pwd`/target/$TARGET/openssl/openssl-$OPENSSL_VERS.tar.gz
   curl -o $out https://www.openssl.org/source/openssl-$OPENSSL_VERS.tar.gz
