@@ -145,20 +145,25 @@ case $TARGET in
     ;;
 esac
 
-mkdir -p target/$TARGET/openssl
 install=`pwd`/target/$TARGET/openssl/openssl-install
-out=`pwd`/target/$TARGET/openssl/openssl-$OPENSSL_VERS.tar.gz
-curl -o $out https://www.openssl.org/source/openssl-$OPENSSL_VERS.tar.gz
-sha256sum $out > $out.sha256
-test $OPENSSL_SHA256 = `cut -d ' ' -f 1 $out.sha256`
 
-tar xf $out -C target/$TARGET/openssl
-(cd target/$TARGET/openssl/openssl-$OPENSSL_VERS && \
- CC=$OPENSSL_CC \
- AR=$OPENSSL_AR \
- $SETARCH ./Configure --prefix=$install no-dso $OPENSSL_OS $OPENSSL_CFLAGS -fPIC && \
- make -j4 && \
- make install)
+if [ ! -e "$install"]; then
+  mkdir -p target/$TARGET/openssl
+  out=`pwd`/target/$TARGET/openssl/openssl-$OPENSSL_VERS.tar.gz
+  curl -o $out https://www.openssl.org/source/openssl-$OPENSSL_VERS.tar.gz
+  sha256sum $out > $out.sha256
+  test $OPENSSL_SHA256 = `cut -d ' ' -f 1 $out.sha256`
+
+  tar xf $out -C target/$TARGET/openssl
+  (cd target/$TARGET/openssl/openssl-$OPENSSL_VERS && \
+   CC=$OPENSSL_CC \
+   AR=$OPENSSL_AR \
+   $SETARCH ./Configure --prefix=$install no-dso $OPENSSL_OS $OPENSSL_CFLAGS -fPIC && \
+   make -j4 && \
+   make install)
+else
+  echo 'Using cached OpenSSL static libs'
+fi
 
 # Variables to the openssl-sys crate to link statically against the OpenSSL we
 # just compiled above

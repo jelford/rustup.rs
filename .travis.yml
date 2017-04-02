@@ -101,6 +101,11 @@ matrix:
       env: TARGET=x86_64-apple-darwin
            MACOSX_DEPLOYMENT_TARGET=10.7
 
+cache:
+  - cargo
+  - directories:
+    - target/$TARGET/openssl/openssl-install
+
 branches:
   only:
     - master
