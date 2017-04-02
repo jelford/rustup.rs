@@ -102,6 +102,8 @@ matrix:
     #        MACOSX_DEPLOYMENT_TARGET=10.7
 
 cache:
+  # We're going to download things we don't necessarily want to cache into the `target` directory, so
+  # don't use travis's native `cargo` caching, which just grabs the whole folder.
   - directories:
     - target/$TARGET/openssl/openssl-install
     - target/cargo-home
