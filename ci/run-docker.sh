@@ -3,7 +3,7 @@
 set -ex
 
 # let's see what we got from the cache
-tree `pwd`/target
+find target -maxdepth 3
 
 # For some unknown reason libz is not found in the android docker image, so we
 # use this workaround
