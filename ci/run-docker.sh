@@ -145,7 +145,7 @@ case $TARGET in
     ;;
 esac
 
-install=`pwd`/target/$TARGET/openssl/openssl-install-$OPENSSL_VERS
+install=`pwd`/target/$TARGET/openssl/openssl-install/$OPENSSL_VERS
 
 if (sh -c "$install/bin/openssl version | grep $OPENSSL_VERS > /dev/null" 2> /dev/null); then
   echo 'Using cached OpenSSL static libs'
