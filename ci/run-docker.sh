@@ -150,10 +150,17 @@ install=`pwd`/target/$TARGET/openssl/openssl-install
 if (sh -c "$install/bin/openssl version | grep $OPENSSL_VERS > /dev/null" 2> /dev/null); then
   echo 'Using cached OpenSSL static libs'
 else
+  # If the build fails half way through it will be difficult to distinguish when the next run sees
+  # the cached version, so finalize the build atomically. We're linking statically so don't need to
+  # worry about using a different prefix at install time.
+  final_install_path=$install
+  install=$install-partial
+
   mkdir -p target/$TARGET/openssl
   out=`pwd`/target/$TARGET/openssl/openssl-$OPENSSL_VERS.tar.gz
   curl -o $out https://www.openssl.org/source/openssl-$OPENSSL_VERS.tar.gz
-  echo "$OPENSSL_SHA256 $out" | sha256sum -c
+  echo "$OPENSSL_SHA256 $out" > $out.checksum
+  sha256sum -c $out.checksum
 
   tar xf $out -C target/$TARGET/openssl
   (cd target/$TARGET/openssl/openssl-$OPENSSL_VERS && \
@@ -162,6 +169,9 @@ else
    $SETARCH ./Configure --prefix=$install no-dso $OPENSSL_OS $OPENSSL_CFLAGS -fPIC && \
    make -j4 && \
    make install)
+
+   mv $install $final_install_path
+   install=$final_install_path
 fi
 
 # Variables to the openssl-sys crate to link statically against the OpenSSL we
