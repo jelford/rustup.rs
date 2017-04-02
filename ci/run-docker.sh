@@ -147,11 +147,13 @@ esac
 
 install=`pwd`/target/$TARGET/openssl/openssl-install
 
-if [ ! -e "$install/lib/libcrypto.a" ]; then
+if (sh -c "$install/bin/openssl version | grep $OPENSSL_VERS > /dev/null" 2> /dev/null); then
+  echo 'Using cached OpenSSL static libs'
+else
   mkdir -p target/$TARGET/openssl
   out=`pwd`/target/$TARGET/openssl/openssl-$OPENSSL_VERS.tar.gz
   curl -o $out https://www.openssl.org/source/openssl-$OPENSSL_VERS.tar.gz
-  echo $OPENSSL_SHA256 $out | sha256sum -c
+  echo "$OPENSSL_SHA256 $out" | sha256sum -c
 
   tar xf $out -C target/$TARGET/openssl
   (cd target/$TARGET/openssl/openssl-$OPENSSL_VERS && \
@@ -160,8 +162,6 @@ if [ ! -e "$install/lib/libcrypto.a" ]; then
    $SETARCH ./Configure --prefix=$install no-dso $OPENSSL_OS $OPENSSL_CFLAGS -fPIC && \
    make -j4 && \
    make install)
-else
-  echo 'Using cached OpenSSL static libs'
 fi
 
 # Variables to the openssl-sys crate to link statically against the OpenSSL we
