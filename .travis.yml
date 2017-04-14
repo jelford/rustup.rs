@@ -3,6 +3,12 @@ dist: trusty
 services:
   - docker
 
+addons:
+  artifacts:
+    paths:
+      - target/$TARGET/release/rustup-init
+    debug: true
+
 matrix:
   include:
     # Linux builds use the `rust-slave-dist` image so we link them against a
